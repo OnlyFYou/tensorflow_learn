@@ -6,7 +6,7 @@ INPUT_NODE = 784
 OUTPUT_NODE = 10
 
 # 配置神经网络的参数
-LAYER1_NODE = 500  # 隐藏层节点数
+LAYER1_NODE = 100  # 第一层隐藏层节点数
 BATCH_SIZE = 100  # 一个训练 batch 中的训练数据个数。数字越小时，训练过程越接近随机梯度下降；数字越大时，训练越接近梯度下降
 LEARNING_RATE_BASE = 0.8  # 基础的学习率
 LEARNING_RATE_DECAY = 0.99  # 学习率的衰减率
@@ -33,11 +33,11 @@ def inference(input_tensor, avg_class, reuse=False):
             # 计算输出层的前向传播结果。因为在计算损失函数时会一并计算 softmax 函数，所以这里不需要加入激活函数。
             # 而且不加入 softmax 不会影响预测结果。因为预测时使用的是不同类别对应节点输出值的相对大小，有没有
             # softmax 层对最后分类结果的计算没有影响。于是在计算整个神经网络的前向传播时可以不加入最后的 softmax 层。
-            return tf.matmul(layer1, weights) + biases
+            return  tf.matmul(layer1, weights) + biases
     else:
         with tf.variable_scope('layer1', reuse=reuse):
             weights = tf.get_variable('weights', [INPUT_NODE, LAYER1_NODE], initializer=tf.truncated_normal_initializer(stddev=0.1))
-            biases = tf.get_variable('biases',[LAYER1_NODE], initializer=tf.constant_initializer(0.1))
+            biases = tf.get_variable('biases', [LAYER1_NODE], initializer=tf.constant_initializer(0.1))
             # 生成输出层的参数
             # 首先使用 avg_class.average 函数来计算得出变量的滑动平均值，然后再计算相应的神经网络前向传播结果。
             layer1 = tf.nn.relu(tf.matmul(input_tensor, avg_class.average(weights)) + avg_class.average(biases))
@@ -131,12 +131,10 @@ def train(mnist):
         print("After %d training step(s), test accuracy using average model is %g" % (TRAINING_STEPS, test_acc))
 
 
-# 主程序入口
 def main(arvg=None):
     mnist = input_data.read_data_sets("/path/to/MNIST_data", one_hot=True)
     train(mnist)
 
 
-# Tensorflow 提供的一个主程序入口，tf.app.run 会调用上面定义的 main 函数
 if __name__ == '__main__':
     tf.app.run()

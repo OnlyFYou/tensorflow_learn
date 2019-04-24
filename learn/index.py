@@ -23,7 +23,7 @@ y = tf.sigmoid(y)
 反向传播 交叉熵
 '''
 cross_entropy = -tf.reduce_mean(y_ * tf.log(tf.clip_by_value(y, 1e-1, 1.0)) + (1-y_) * tf.log(tf.clip_by_value(1-y, 1e-10,1.0)))
-#cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y)
+# cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y)
 train_step = tf.train.AdamOptimizer(0.001).minimize(cross_entropy)
 
 rdm = RandomState(1)
@@ -48,7 +48,7 @@ with tf.Session() as sess:
         start = (i * 8) % dataset_size
         end = min(start+8, dataset_size)
         sess.run(train_step, feed_dict={x: X[start:end], y_:Y[start:end]})
-        if i%1000 == 0:
+        if i % 1000 == 0:
             total_cross_entropy = sess.run(cross_entropy,feed_dict={x: X, y_:Y})
             print(total_cross_entropy)
             print("\n")

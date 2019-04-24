@@ -1,6 +1,8 @@
 import tensorflow as tf
 
-
+'''
+命名空间变量的管理
+'''
 def interence(input_tensor, reuse=False):
     with tf.variable_scope('layer1', reuse=reuse):
         weights = tf.get_variable('weights', [784, 500], initializer=tf.truncated_normal_initializer(stddev=0.1))
@@ -15,7 +17,7 @@ def interence(input_tensor, reuse=False):
     return layer2
 
 
-x = tf.placeholder(tf.float32, [None, 784], name = 'x-input')
+x = tf.placeholder(tf.float32, [None, 784], name='x-input')
 y = interence(x)
 
 new_x = ...
