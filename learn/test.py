@@ -1,8 +1,4 @@
 import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
 
-with tf.variable_scope('test'):
-    a = tf.get_variable('a', [0], initializer=tf.constant_initializer(100.0))
-    b = 0
-
-print(a)
-print(b)
+mnist = input_data.read_data_sets('/path/to/MNIST_data', one_hot=False)
