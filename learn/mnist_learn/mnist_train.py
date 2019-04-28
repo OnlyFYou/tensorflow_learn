@@ -15,7 +15,7 @@ REGULARZATION_RATE = 0.0001
 TRAINING_STEPS = 9000
 # 滑动平均衰减率
 MOVING_AVERAGE_DECAY = 0.99
-MODEL_SAVE_PATH = '/path/to/model/'
+MODEL_SAVE_PATH = '/path/to/model'
 MODEL_NAME = 'model.ckpt'
 
 
@@ -55,7 +55,7 @@ def train(mnist):
     writer.close()
 
 
-def main(argv=None):
+def main():
     mnist = input_data.read_data_sets('/path/to/MNIST_data', one_hot=True)
     train(mnist)
 
