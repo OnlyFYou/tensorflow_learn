@@ -1,4 +1,5 @@
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
 
-mnist = input_data.read_data_sets('/path/to/MNIST_data', one_hot=False)
+with tf.variable_scope('foo'):
+    a = tf.get_variable('bar', [1])
+    print(a.name)

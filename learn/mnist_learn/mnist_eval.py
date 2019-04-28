@@ -13,7 +13,7 @@ def evaluate(mnist):
         x = tf.placeholder(tf.float32, [None, learn.mnist_learn.mnist_inference.INPUT_NODE], name='x-input')
         y_ = tf.placeholder(tf.float32, [None, learn.mnist_learn.mnist_inference.OUTPUT_NODE], name='y-input')
         valid_feed = {x: mnist.validation.images, y_: mnist.validation.labels}
-
+        X = mnist.validation.images
         y = learn.mnist_learn.mnist_inference.inference(x, None)
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -42,4 +42,4 @@ def main(argv=None):
 
     
 if __name__ == '__main__':
-    tf.app.run()
+    main()

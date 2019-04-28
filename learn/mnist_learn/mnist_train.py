@@ -55,10 +55,10 @@ def train(mnist):
     writer.close()
 
 
-def main(_):
+def main():
     mnist = input_data.read_data_sets('/path/to/MNIST_data', one_hot=True)
     train(mnist)
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    main()
