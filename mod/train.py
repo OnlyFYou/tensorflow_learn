@@ -10,7 +10,7 @@ learning_rate_decay = 0.99
 # 正则化损失系数
 reguzation_rate = 0.0001
 # 总训练步数
-train_steps = 10000
+train_steps = 20000
 # 滑动平均衰减率
 moving_average_decay = 0.99
 model_save_path = '/model/path/log'
