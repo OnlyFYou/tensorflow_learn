@@ -1,5 +1,5 @@
 import tensorflow as tf
-import mod.inference as inference
+import mod.Model as inference
 from tensorflow.examples.tutorials.mnist import input_data
 
 batch_size = 100
@@ -13,17 +13,17 @@ reguzation_rate = 0.0001
 train_steps = 10000
 # 滑动平均衰减率
 moving_average_decay = 0.99
-model_save_path = '/model/path/log'
 model_name = 'scoremod.ckpt'
+model_log = '/model/to/path/log'
 
-
+model = inference.Model()
 # 训练
 def train(mnist):
     x = tf.placeholder(tf.float32, [None, 784], name='x_input')
     y_ = tf.placeholder(tf.float32, [None, 10], name='y_input')
     reguzation = tf.contrib.layers.l2_regularizer(reguzation_rate)
-    hidden1 = inference.nn_layer(x, 784, 500, None, reguzation, 'layer1')
-    y = inference.nn_layer(hidden1, 500, 10, None, reguzation, 'layer2')
+    hidden1 = model.nn_layer(x, 784, 500, None, reguzation, 'layer1')
+    y = model.nn_layer(hidden1, 500, 10, None, reguzation, 'layer2')
     global_step = tf.Variable(0, trainable=False)
     with tf.name_scope('moving_average'):
         avg_class = tf.train.ExponentialMovingAverage(moving_average_decay, global_step)
@@ -43,7 +43,7 @@ def train(mnist):
     with tf.Session() as sess:
         tf.initialize_all_variables().run()
         # 生成结构图信息
-        writer = tf.summary.FileWriter(model_save_path, sess.graph)
+        writer = tf.summary.FileWriter(model_log, sess.graph)
         for i in range(train_steps):
             xs, ys = mnist.train.next_batch(batch_size)
             # 内存
@@ -57,6 +57,7 @@ def train(mnist):
                 writer.add_run_metadata(run_metadata, 'step%03d' % i)
                 print('after training step %s 步' % i)
         writer.close()
+        model.save_model(sess, x, y)
 
 
 def main():
