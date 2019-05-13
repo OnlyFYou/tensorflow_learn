@@ -1,7 +1,9 @@
-import tensorflow as tf
-import mod.Model as inference
-from tensorflow.examples.tutorials.mnist import input_data
+import os
+import sys
 
+import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
+from Mod import Model
 batch_size = 100
 # 指数衰减法基础学习率
 learning_rate_base = 0.8
@@ -13,17 +15,20 @@ reguzation_rate = 0.0001
 train_steps = 10000
 # 滑动平均衰减率
 moving_average_decay = 0.99
-model_name = 'scoremod.ckpt'
+model_path = '/model/to/model/'
 model_log = '/model/to/path/log'
 
-model = inference.Model()
+
 # 训练
 def train(mnist):
+
+    model = Model(model_path)
     x = tf.placeholder(tf.float32, [None, 784], name='x_input')
     y_ = tf.placeholder(tf.float32, [None, 10], name='y_input')
     reguzation = tf.contrib.layers.l2_regularizer(reguzation_rate)
     hidden1 = model.nn_layer(x, 784, 500, None, reguzation, 'layer1')
     y = model.nn_layer(hidden1, 500, 10, None, reguzation, 'layer2')
+    model.init_from_data(x, y_, None, None, None)
     global_step = tf.Variable(0, trainable=False)
     with tf.name_scope('moving_average'):
         avg_class = tf.train.ExponentialMovingAverage(moving_average_decay, global_step)
@@ -41,7 +46,7 @@ def train(mnist):
             train_op = tf.no_op(name='train')
     merge = tf.summary.merge_all()
     with tf.Session() as sess:
-        tf.initialize_all_variables().run()
+        tf.global_variables_initializer.run()
         # 生成结构图信息
         writer = tf.summary.FileWriter(model_log, sess.graph)
         for i in range(train_steps):

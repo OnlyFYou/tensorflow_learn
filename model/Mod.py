@@ -1,13 +1,13 @@
+import os
+import sys
+
 import tensorflow as tf
+from Base import Basic
 
-from mod.Base import Base
 
-
-class Model(Base):
-
+class Model(Basic):
     # 获取权重和正则化损失
-    @staticmethod
-    def get_weights(shape, regulaizer):
+    def get_weights(self, shape, regulaizer):
         weights = tf.Variable(tf.truncated_normal(shape=shape, stddev=0.1))
         # 有正则化损失，加入losses集合
         if regulaizer is not None:
@@ -15,8 +15,7 @@ class Model(Base):
         return weights
 
     # 变量可视化
-    @staticmethod
-    def variables_summary(name, var):
+    def variables_summary(self, name, var):
         with tf.name_scope('summary'):
             tf.summary.histogram(name, var)
             # 平均值
