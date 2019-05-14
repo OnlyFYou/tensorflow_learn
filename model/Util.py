@@ -3,10 +3,9 @@ import tensorflow as tf
 import math
 import unicodedata
 # 损失函数
-from Base import Basic, AutoBase, Generator
 
 
-class Losses(Basic):
+class Losses:
 
     # 欧式距离
     @staticmethod
@@ -47,7 +46,7 @@ class Losses(Basic):
 
 
 # 激活函数
-class Activations(Basic):
+class Activations:
 
     @staticmethod
     def elu(x, name):
@@ -158,108 +157,6 @@ class Toolbox:
         if len(new) < len(feat):
             new.append(float("nan"))
         return new
-
-    @staticmethod
-    def get_feature_info(data, numerical_idx, is_regression, logger=None):
-        generate_numerical_idx = False
-        if numerical_idx is None:
-            generate_numerical_idx = True
-            numerical_idx = [False] * len(data[0])
-        else:
-            numerical_idx = list(numerical_idx)
-        data_t = data.T if isinstance(data, np.ndarray) else list(zip(*data))
-        if type(data[0][0]) is not str:
-            shrink_features = [Toolbox.shrink_nan(feat) for feat in data_t]
-        else:
-            shrink_features = data_t
-        feature_sets = [
-            set() if idx is None or idx else set(shrink_feature)
-            for idx, shrink_feature in zip(numerical_idx, shrink_features)
-        ]
-        n_features = [len(feature_set) for feature_set in feature_sets]
-        all_num_idx = [
-            True if not feature_set else all(Toolbox.is_number(str(feat)) for feat in feature_set)
-            for feature_set in feature_sets
-        ]
-        if generate_numerical_idx:
-            np_shrink_features = [
-                shrink_feature if not all_num else np.asarray(shrink_feature, np.float32)
-                for all_num, shrink_feature in zip(all_num_idx, shrink_features)
-            ]
-            all_unique_idx = [
-                len(feature_set) == len(np_shrink_feature)
-                and (not all_num or np.allclose(np_shrink_feature, np_shrink_feature.astype(np.int32)))
-                for all_num, feature_set, np_shrink_feature in zip(all_num_idx, feature_sets, np_shrink_features)
-            ]
-            numerical_idx = Toolbox.get_numerical_idx(feature_sets, all_num_idx, all_unique_idx, logger)
-            for i, numerical in enumerate(numerical_idx):
-                if numerical is None:
-                    all_num_idx[i] = None
-        else:
-            for i, (feature_set, shrink_feature) in enumerate(zip(feature_sets, shrink_features)):
-                if i == len(numerical_idx) - 1 or numerical_idx[i] is None:
-                    continue
-                if feature_set:
-                    if len(feature_set) == 1:
-                        Toolbox.warn_all_same(i, logger)
-                        all_num_idx[i] = numerical_idx[i] = None
-                    continue
-                if Toolbox.all_same(shrink_feature):
-                    Toolbox.warn_all_same(i, logger)
-                    all_num_idx[i] = numerical_idx[i] = None
-                elif numerical_idx[i]:
-                    shrink_feature = np.asarray(shrink_feature, np.float32)
-                    if np.max(shrink_feature[~np.isnan(shrink_feature)]) < 2 ** 30:
-                        if np.allclose(shrink_feature, np.array(shrink_feature, np.int32)):
-                            if Toolbox.all_unique(shrink_feature):
-                                Toolbox.warn_all_unique(i, logger)
-                                all_num_idx[i] = numerical_idx[i] = None
-        if is_regression:
-            all_num_idx[-1] = numerical_idx[-1] = True
-            feature_sets[-1] = set()
-            n_features.pop()
-        return feature_sets, n_features, all_num_idx, numerical_idx
-
-    @staticmethod
-    def get_numerical_idx(feature_sets, all_num_idx, all_unique_idx, logger=None):
-        rs = []
-        print("Generating numerical_idx")
-        for i, (feat_set, all_num, all_unique) in enumerate(
-                zip(feature_sets, all_num_idx, all_unique_idx)
-        ):
-            if len(feat_set) == 1:
-                Toolbox.warn_all_same(i, logger)
-                rs.append(None)
-                continue
-            no_nan_feat = Toolbox.pop_nan(feat_set)
-            if not all_num:
-                if len(feat_set) == len(no_nan_feat):
-                    rs.append(False)
-                    continue
-                if not all(Toolbox.is_number(str(feat)) for feat in no_nan_feat):
-                    rs.append(False)
-                    continue
-            no_nan_feat = np.array(list(no_nan_feat), np.float32)
-            int_no_nan_feat = no_nan_feat.astype(np.int32)
-            n_feat, feat_min, feat_max = len(no_nan_feat), no_nan_feat.min(), no_nan_feat.max()
-            if not np.allclose(no_nan_feat, int_no_nan_feat):
-                rs.append(True)
-                continue
-            if all_unique:
-                Toolbox.warn_all_unique(i, logger)
-                rs.append(None)
-                continue
-            feat_min, feat_max = int(feat_min), int(feat_max)
-            if np.allclose(np.sort(no_nan_feat), np.linspace(feat_min, feat_max, n_feat)):
-                rs.append(False)
-                continue
-            if feat_min >= 20 and n_feat >= 20:
-                rs.append(True)
-            elif 1.5 * n_feat >= feat_max - feat_min:
-                rs.append(False)
-            else:
-                rs.append(True)
-        return np.array(rs)
 
 
 # 缺失值处理
