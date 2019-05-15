@@ -58,16 +58,16 @@ class TrainModel:
             tf.local_variables_initializer().run()
             tf.initialize_all_variables().run()
             writer = tf.summary.FileWriter(model_log, sess.graph)
-            coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
-            threads = tf.train.start_queue_runners(coord=coord)
             # 生成结构图信息
             train_data, train_label = DataUtil.generator_train_data(train_file_ary, batch_size, feature_size)
             test_d, test_l = DataUtil.generator_test_data(test_file_ary, test_data_size, feature_size)
+            coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
+            threads = tf.train.start_queue_runners(coord=coord)
             for i in range(total_steps):
                 print('第%d次训练' % i)
                 e_batch, l_batch = sess.run([train_data, train_label])
                 e_exam = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(e_batch)]
-                l_exam = [1. if x.decode('utf-8') == '1.0' else 0. for x in l_batch]
+                l_exam = [1 if x.decode('utf-8') == '1.0' else 0 for x in l_batch]
                 label = tf.one_hot(l_exam, 2).eval()
                 summary, loss_value, step, _ = sess.run([merge, total_loss, global_step, train_op],
                                                         feed_dict={x: e_exam, y_: label})
@@ -83,7 +83,7 @@ class TrainModel:
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
                     a, b = sess.run([test_d, test_l])
                     test_data = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(a)]
-                    d = [1. if x.decode('utf-8') == '1.0' else 0. for x in b]
+                    d = [1 if x.decode('utf-8') == '1.0' else 0 for x in b]
                     test_label = tf.one_hot(d, 2).eval()
                     accuracy_score = sess.run(accuracy, feed_dict={x: test_data, y_: test_label})
                     print('after training step %s 步，正确率 %f' % (i, accuracy_score))
