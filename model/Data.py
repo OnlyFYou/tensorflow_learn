@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+
 class DataUtil:
 
     @staticmethod
@@ -15,8 +16,8 @@ class DataUtil:
         example_batch = tf.decode_csv(value, record_defaults=record_defaults)
         features = tf.stack(example_batch[0:-1])  # 前列数据，后1列标签
         label = tf.stack(example_batch[-1])
-        example_batch, label_batch = tf.train.shuffle_batch([features, label], batch_size=batch_size, capacity=200,
-                                                            min_after_dequeue=100, num_threads=6)
+        example_batch, label_batch = tf.train.shuffle_batch([features, label], batch_size=batch_size, capacity= batch_size +50,
+                                                            min_after_dequeue=batch_size+10, num_threads=20)
         return example_batch, label_batch
 
     @staticmethod
