@@ -9,28 +9,26 @@ class Losses:
 
     # 欧式距离
     @staticmethod
-    def mse(y, pred, _, weights=None):
+    def mse(y, pred, weights=None):
         if weights is None:
             return tf.losses.mean_squared_error(y, pred)
         return tf.losses.mean_squared_error(y, pred, tf.reshape(weights, [-1, 1]))
 
     # 交叉熵 pred：输出结果  y:正确结果
     @staticmethod
-    def cross_entropy(y, pred, already_prob, argmax=False, weights=None):
+    def cross_entropy(label, pred, already_softmax, argmax=False, weights=None):
         # 神经网络输出的已经是经过softMax()的概率
-        if already_prob:
-            eps = 1e-12
-            pred = tf.log(tf.clip_by_value(pred, eps, 1 - eps))
-            return -tf.reduce_mean(y * tf.log(tf.clip_by_value(pred, 1e-12, 1.0)))
+        if already_softmax:
+            return -tf.reduce_mean(label * tf.log(tf.clip_by_value(pred, 1e-12, 1.0)))
         if weights is None:
             if argmax:
-                return tf.losses.sparse_softmax_cross_entropy(logits=pred, labels=tf.argmax(y, axis=1))
+                return tf.losses.sparse_softmax_cross_entropy(logits=pred, onehot_labels=tf.argmax(label, axis=1))
             else:
-                return tf.losses.softmax_cross_entropy(labels=y, logits=pred)
+                return tf.losses.softmax_cross_entropy(logits=pred, onehot_labels=label)
         if argmax:
-            return tf.losses.sparse_softmax_cross_entropy(logits=pred, labels=tf.argmax(y, axis=1), weights=weights)
+            return tf.losses.sparse_softmax_cross_entropy(logits=pred, onehot_labels=tf.argmax(label, axis=1), weights=weights)
         else:
-            return tf.losses.softmax_cross_entropy(labels=y, logits=pred, weights=weights)
+            return tf.losses.softmax_cross_entropy(onehot_labels=label, logits=pred, weights=weights)
 
     # 相关性系数损失函数
     @staticmethod
@@ -49,36 +47,36 @@ class Losses:
 class Activations:
 
     @staticmethod
-    def elu(x, name):
-        return tf.nn.elu(x, name)
+    def elu():
+        return tf.nn.elu
 
     @staticmethod
     def relu(x, name):
         return tf.nn.relu(x, name)
 
     @staticmethod
-    def selu(x, name):
-        return tf.nn.sele(x, name)
+    def selu():
+        return tf.nn.selu
 
     @staticmethod
-    def sigmoid(x, name):
-        return tf.nn.sigmoid(x, name)
+    def sigmoid():
+        return tf.nn.sigmoid
 
     @staticmethod
-    def tanh(x, name):
-        return tf.nn.tanh(x, name)
+    def tanh():
+        return tf.nn.tanh
 
     @staticmethod
-    def softplus(x, name):
-        return tf.nn.softplus(x, name)
+    def softplus():
+        return tf.nn.softplus
 
     @staticmethod
-    def softmax(x, name):
-        return tf.nn.softmax(x, name=name)
+    def softmax():
+        return tf.nn.softmax
 
     @staticmethod
-    def sign(x, name):
-        return tf.sign(x, name)
+    def sign():
+        return tf.sign
 
     @staticmethod
     def one_hot(x, name):
