@@ -1,8 +1,3 @@
-import os
-import pickle
-import random
-
-import math
 import numpy as np
 import tensorflow as tf
 import logging
@@ -14,8 +9,8 @@ from Util import Toolbox, NanHandler, PreProcessor
 
 class Basic:
 
-    def save_model(self, sess, x, y):
-        builder = tf.saved_model.builder.SavedModelBuilder(self._save_model_path)
+    def save_model(self, sess, x, y, path):
+        builder = tf.saved_model.builder.SavedModelBuilder(path)
         signature = predict_signature_def(inputs={'myInput': x},
                                           outputs={'myOutput': y})
         builder.add_meta_graph_and_variables(sess=sess,
@@ -23,8 +18,8 @@ class Basic:
                                              signature_def_map={'predict': signature})
         builder.save()
 
-    def load_model(self, sess):
-        tf.saved_model.loader.load(sess, [tag_constants.SERVING], self._save_model_path)
+    def load_model(self, sess, path):
+        tf.saved_model.loader.load(sess, [tag_constants.SERVING], path)
         x = sess.graph.get_tensor_by_name('myInput:0')
         y = sess.graph.get_tensor_by_name('myOutput:0')
         return x, y

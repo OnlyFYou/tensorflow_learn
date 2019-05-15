@@ -1,6 +1,3 @@
-import os
-import sys
-
 import tensorflow as tf
 from Base import Basic
 

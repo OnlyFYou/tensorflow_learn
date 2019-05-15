@@ -19,7 +19,7 @@ model_log = '/model/to/path/log'
 # 训练
 def train(mnist):
 
-    model = Model(model_path)
+    model = Model()
     x = tf.placeholder(tf.float32, [None, 784], name='x_input')
     y_ = tf.placeholder(tf.float32, [None, 10], name='y_input')
     reguzation = tf.contrib.layers.l2_regularizer(reguzation_rate)
