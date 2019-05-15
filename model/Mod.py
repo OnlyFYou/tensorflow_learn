@@ -56,15 +56,14 @@ class Model(Basic):
                         return activation
 
     def get_model_result(self, regulaztion, n_node, act):
-        x = tf.placeholder(tf.float32, [None, n_node[0]], name='x_input')
+        a = tf.placeholder(tf.float32, [None, n_node[0]], name='layer_input')
         n_layer = len(n_node)
         for i in range(n_layer):
             if i == 0:
                 continue
             if i + 1 == n_layer:
-                x = self.nn_layer(x, n_node[i - 1], n_node[i], None, regulaztion, 'layer' + str(i), act=None)
+                a = self.nn_layer(a, n_node[i - 1], n_node[i], None, regulaztion, 'layer' + str(i), act=None)
             else:
-                print(n_node[i-1], n_node[i])
-                x = self.nn_layer(x, n_node[i - 1], n_node[i], None, regulaztion, 'layer' + str(i), act=act)
-            y = x
-        return y
+                a = self.nn_layer(a, n_node[i - 1], n_node[i], None, regulaztion, 'layer' + str(i), act=act)
+        return a
+

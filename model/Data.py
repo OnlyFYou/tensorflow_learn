@@ -7,7 +7,7 @@ class DataUtil:
     @staticmethod
     def get_data(path, feature_size, batch_size):
         filenames = path
-        filename_queue = tf.train.string_input_producer(filenames, shuffle=False)
+        filename_queue = tf.train.string_input_producer(filenames, shuffle=False,)
         # 定义Reader
         reader = tf.TextLineReader()
         key, value = reader.read(filename_queue)
@@ -16,20 +16,19 @@ class DataUtil:
         example_batch = tf.decode_csv(value, record_defaults=record_defaults)
         features = tf.stack(example_batch[0:-1])  # 前列数据，后1列标签
         label = tf.stack(example_batch[-1])
-        example_batch, label_batch = tf.train.shuffle_batch([features, label], batch_size=batch_size, capacity= 200,
-                                                            min_after_dequeue=100, num_threads=6)
+        example_batch, label_batch = tf.train.shuffle_batch([features, label], batch_size=batch_size, capacity=3000,
+                                                            min_after_dequeue=1000, num_threads=12)
         return example_batch, label_batch
 
     @staticmethod
-    def generator_data(path, sess, batch_size):
-        example_batch, label_batch = DataUtil.get_data([path], 15,
-                                                       batch_size)
-        coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
-        threads = tf.train.start_queue_runners(coord=coord)
-        e_batch, l_batch = sess.run([example_batch, label_batch])
-        e_exam = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(e_batch)]
-        l_exam = [1 if x.decode('utf-8') == '1.0' else 0 for x in l_batch]
-        label = tf.one_hot(l_exam, 2).eval()
-        coord.request_stop()
-        coord.join(threads)
-        return e_exam, label
+    def generator_train_data(train_path, train_batch_size, feature_size):
+        example_batch, label_batch = DataUtil.get_data(train_path, feature_size,
+                                                       train_batch_size)
+
+        return example_batch, label_batch
+
+    @staticmethod
+    def generator_test_data(test_path, test_data_size, feature_size):
+        test_data, test_label = DataUtil.get_data(test_path, feature_size,
+                                                  test_data_size)
+        return test_data, test_label

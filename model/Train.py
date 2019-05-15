@@ -3,7 +3,6 @@ from Data import DataUtil
 from Mod import Model
 import numpy as np
 
-
 class TrainModel:
     @staticmethod
     def train_start(data_info):
@@ -49,49 +48,47 @@ class TrainModel:
         with tf.name_scope('train_step'):
             learning_rate = tf.train.exponential_decay(learning_rate_base, global_step,
                                                        train_data_size / batch_size, learning_rate_decay)
-            train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(total_loss)
+            train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(total_loss, global_step=global_step)
             # train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
             with tf.control_dependencies([train_step, avg_op]):
                 train_op = tf.no_op(name='train')
         merge = tf.summary.merge_all()
+
         with tf.Session() as sess:
             tf.local_variables_initializer().run()
-            tf.global_variables_initializer().run()
-            # 生成结构图信息
+            tf.initialize_all_variables().run()
             writer = tf.summary.FileWriter(model_log, sess.graph)
             coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
             threads = tf.train.start_queue_runners(coord=coord)
-            # 测试数据
-            train_e, train_l = DataUtil.get_data(train_file_ary, feature_size, batch_size)
-            # 训练数据
-            example_batch, label_batch = DataUtil.get_data(test_file_ary,
-                                                           feature_size,
-                                                           test_data_size)
+            # 生成结构图信息
+            train_data, train_label = DataUtil.generator_train_data(train_file_ary, batch_size, feature_size)
+            test_d, test_l = DataUtil.generator_test_data(test_file_ary, test_data_size, feature_size)
             for i in range(total_steps):
-                print('第%d次' % i)
-                e_batch, l_batch = sess.run([example_batch, label_batch])
+                print('第%d次训练' % i)
+                e_batch, l_batch = sess.run([train_data, train_label])
                 e_exam = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(e_batch)]
-                l_exam = [1 if x.decode('utf-8') == '1.0' else 0 for x in l_batch]
+                l_exam = [1. if x.decode('utf-8') == '1.0' else 0. for x in l_batch]
                 label = tf.one_hot(l_exam, 2).eval()
-                summary, loss_value, step, _ = sess.run([merge, loss, global_step, train_op],
+                summary, loss_value, step, _ = sess.run([merge, total_loss, global_step, train_op],
                                                         feed_dict={x: e_exam, y_: label})
                 writer.add_summary(summary, i)
                 if i % 100 == 0:
                     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                     run_metadata = tf.RunMetadata()
-                    summary, loss_value, step, _ = sess.run([merge, loss, global_step, train_op],
+                    summary, loss_value, step, _ = sess.run([merge, total_loss, global_step, train_op],
                                                             feed_dict={x: e_exam, y_: label},
                                                             options=run_options, run_metadata=run_metadata)
                     writer.add_run_metadata(run_metadata, 'step%03d' % i)
                     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-                    a, b = sess.run([train_e, train_l])
-                    exam_train = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(a)]
-                    label_train = [1 if x.decode('utf-8') == '1.0' else 0 for x in b]
-                    label = tf.one_hot(label_train, 2).eval()
-                    accuracy_score = sess.run(accuracy, feed_dict={x: exam_train, y_: label})
+                    a, b = sess.run([test_d, test_l])
+                    test_data = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(a)]
+                    d = [1. if x.decode('utf-8') == '1.0' else 0. for x in b]
+                    test_label = tf.one_hot(d, 2).eval()
+                    accuracy_score = sess.run(accuracy, feed_dict={x: test_data, y_: test_label})
                     print('after training step %s 步，正确率 %f' % (i, accuracy_score))
-            coord.request_stop()
-            coord.join(threads)
             writer.close()
             model.save_model(sess, x, y, model_path)
+            coord.request_stop()
+            coord.join(threads)
+

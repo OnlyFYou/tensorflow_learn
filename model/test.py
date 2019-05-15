@@ -2,13 +2,13 @@ from Util import Activations, Losses
 from Train import TrainModel
 
 data = {
-    "train_file_ary": ['C:\\Workspace\\tensorflow_learn\\model\\data\\test.csv'],
-    "test_file_ary": ['C:\\Workspace\\tensorflow_learn\\model\\data\\train.csv'],
+    "train_file_ary": ['D:\\tensorflow_learn\\model\\data\\train.csv'],
+    "test_file_ary": ['D:\\tensorflow_learn\\model\\data\\test.csv'],
     "total_steps": 5000,
     "model_path": "/model/to/model",
     "model_log": "/model/to/log",
     "n_node_ary": [14, 200, 2],
-    "feature_size": 14,
+    "feature_size": 15,
     "act": Activations.relu,
     "regu_bool": False,
     "loss_fun": Losses.cross_entropy,
