@@ -9,7 +9,7 @@ class Losses:
 
     # 欧式距离
     @staticmethod
-    def mse(y, pred, _, weights=None):
+    def mse(y, pred, weights=None):
         if weights is None:
             return tf.losses.mean_squared_error(y, pred)
         return tf.losses.mean_squared_error(y, pred, tf.reshape(weights, [-1, 1]))
@@ -19,8 +19,6 @@ class Losses:
     def cross_entropy(y, pred, already_prob, argmax=False, weights=None):
         # 神经网络输出的已经是经过softMax()的概率
         if already_prob:
-            eps = 1e-12
-            pred = tf.log(tf.clip_by_value(pred, eps, 1 - eps))
             return -tf.reduce_mean(y * tf.log(tf.clip_by_value(pred, 1e-12, 1.0)))
         if weights is None:
             if argmax:
