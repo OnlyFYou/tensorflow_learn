@@ -68,6 +68,7 @@ class TrainModel:
                                                            feature_size,
                                                            test_data_size)
             for i in range(total_steps):
+                print('第%d次' % i)
                 e_batch, l_batch = sess.run([example_batch, label_batch])
                 e_exam = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(e_batch)]
                 l_exam = [1 if x.decode('utf-8') == '1.0' else 0 for x in l_batch]
@@ -75,7 +76,7 @@ class TrainModel:
                 summary, loss_value, step, _ = sess.run([merge, loss, global_step, train_op],
                                                         feed_dict={x: e_exam, y_: label})
                 writer.add_summary(summary, i)
-                if i % 500 == 0:
+                if i % 100 == 0:
                     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                     run_metadata = tf.RunMetadata()
                     summary, loss_value, step, _ = sess.run([merge, loss, global_step, train_op],
