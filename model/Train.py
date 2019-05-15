@@ -59,14 +59,14 @@ class TrainModel:
             tf.global_variables_initializer().run()
             # 生成结构图信息
             writer = tf.summary.FileWriter(model_log, sess.graph)
+            coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
+            threads = tf.train.start_queue_runners(coord=coord)
             # 测试数据
             train_e, train_l = DataUtil.get_data(train_file_ary, feature_size, batch_size)
             # 训练数据
             example_batch, label_batch = DataUtil.get_data(test_file_ary,
                                                            feature_size,
                                                            test_data_size)
-            coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
-            threads = tf.train.start_queue_runners(coord=coord)
             for i in range(total_steps):
                 e_batch, l_batch = sess.run([example_batch, label_batch])
                 e_exam = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(e_batch)]

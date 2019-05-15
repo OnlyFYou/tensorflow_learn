@@ -1,6 +1,3 @@
-import tensorflow as tf
-import numpy as np
-from Data import DataUtil
 from Util import Activations, Losses
 from Train import TrainModel
 
@@ -17,7 +14,7 @@ data = {
     "loss_fun": Losses.cross_entropy,
     "train_data_size": 4833,
     "batch_size": 100,
-    "test_data_size": 52
+    "test_data_size": 50
 
 }
 TrainModel.train_start(data)
