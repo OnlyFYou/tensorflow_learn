@@ -47,36 +47,36 @@ class Losses:
 class Activations:
 
     @staticmethod
-    def elu():
-        return tf.nn.elu
+    def elu(x, name):
+        return tf.nn.elu(x, name)
 
     @staticmethod
     def relu(x, name):
         return tf.nn.relu(x, name)
 
     @staticmethod
-    def selu():
-        return tf.nn.selu
+    def selu(x, name):
+        return tf.nn.selu(x, name)
 
     @staticmethod
-    def sigmoid():
-        return tf.nn.sigmoid
+    def sigmoid(x, name):
+        return tf.nn.sigmoid(x, name)
 
     @staticmethod
-    def tanh():
-        return tf.nn.tanh
+    def tanh(x, name):
+        return tf.nn.tanh(x, name)
 
     @staticmethod
-    def softplus():
-        return tf.nn.softplus
+    def softplus(x, name):
+        return tf.nn.softplus(x, name)
 
     @staticmethod
-    def softmax():
-        return tf.nn.softmax
+    def softmax(x, name):
+        return tf.nn.softmax(x, name)
 
     @staticmethod
-    def sign():
-        return tf.sign
+    def sign(x, name):
+        return tf.sign(x, name)
 
     @staticmethod
     def one_hot(x, name):

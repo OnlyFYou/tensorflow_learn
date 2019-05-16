@@ -1,86 +1,43 @@
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
+'''
+正则化损失 在损失安函数中加入刻画模型复杂度的指标 用来防止  过拟合问题 
+J(A) + aR(w) : J(A):损失函数  R(w):模型的复杂程度 a:模型复杂损失在总损失中的比例
+'''
+#获取一层神经网络边上的权重，并将这个权重的L2正则化损失函数加入‘losses’集合中,shape表示正则化项的权重，lambd需要计算正则化损失的参数
+def get_weight(shape, lambd):
+    #生成一个变量
+    var = tf.Variable(tf.random_normal(shape), dtype=tf.float32)
+    tf.add_to_collection(
+        'losses', tf.contrib.layers.l2_regularizer(lambd),(var))
+    return var
 
-SUMMARY_DIR = '/path/to/mylog'
-BATCH_SIZE = 100
-TRAIN_STEP = 3000
+x = tf.placeholder(tf.float32, shape = (None, 2))
+y_ = tf.placeholder(tf.float32, shape = (None, 1))
+batch_size = 8
 
+#每一层网络中的节点数
+layer_dimension = [2, 10, 10, 10, 1]
 
-# 生成变量监控信息，并定义生成监控信息日志的操作
-def variable_summaries(var, name):
-    with tf.name_scope('summaries'):
-        # 变量分布的直方图信息
-        tf.summary.histogram(name, var)
-        # 平均值
-        mean = tf.reduce_mean(var)
-        tf.summary.scalar('mean/' + name, mean)
-        # 标准差
-        stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-        tf.summary.scalar('stddev/' + name, stddev)
+#神经网络的总层数
+n_layer = len(layer_dimension)
 
+#当前网络层深
+cur_layer=x
 
-# 生成一个全链接神经网络 input_dim:输入维度  output_dim:输出维度 act:激活函数
-def nn_layer(input_tensor, input_dim, output_dim, layer_name, act=tf.nn.relu):
-    # 每一层放入一个命名空间
-    with tf.name_scope(layer_name):
-        # 权重
-        with tf.name_scope('weights'):
-            weights = tf.Variable(tf.truncated_normal([input_dim, output_dim], stddev=0.1))
-            variable_summaries(weights, layer_name + '/weights')
+#当前层节点个数
+in_dimension = layer_dimension[0]
 
-        # 偏置项
-        with tf.name_scope('biases'):
-            biases = tf.Variable(tf.constant(0.0, shape=[output_dim]))
-            variable_summaries(biases, layer_name + '/biases')
+#通过一个循环生成五层全连接的神经网络结构
+for i in range(1, n_layer):
+    out_dimension = layer_dimension[i]
+    weight = get_weight([in_dimension, out_dimension], 0.001)
+    bias = tf.Variable(tf.constant(0.1, shape=[out_dimension]))
+    #使用ReLU激活函数
+    cur_layer = tf.nn.rule(tf.matmul(cur_layer, weight) + bias)
+    in_dimension = layer_dimension[i]
 
-        # 输出结果
-        with tf.name_scope('Wx_plus_b'):
-            preactivate = tf.matmul(input_tensor, weights) + biases
-            tf.summary.histogram(layer_name + '/pre_activations', preactivate)
-        activations = act(preactivate, name='activation')
-        tf.summary.histogram(layer_name + '/activations', activations)
-        # 改层输出结果
-        return activations
+mes_loss = tf.reduce_mean(tf.square(y_ - cur_layer))
+tf.add_to_collection('losses', mes_loss)
 
-
-def main(_):
-    mnist = input_data.read_data_sets('/path/to/MNIST_data', one_hot=True)
-
-    # 定义输入
-    with tf.name_scope('input'):
-        x = tf.placeholder(tf.float32, [None, 784], name='x-input')
-        y_ = tf.placeholder(tf.float32, [None, 10], name='y-input')
-
-        # 姜输入向量还原成图片的像素矩阵，写入日志
-        with tf.name_scope('input_reshape'):
-            image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
-            tf.summary.image('input', image_shaped_input, 10)
-
-        hidden1 = nn_layer(x, 784, 500, 'layer1')
-        y = nn_layer(hidden1, 500, 10, 'layer2', act=tf.identity)
-        with tf.name_scope('cross_entropy'):
-            cross_entropy = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_,1)))
-            tf.summary.scalar('cross entropy', cross_entropy)
-        with tf.name_scope('train'):
-            train_step = tf.train.AdamOptimizer(0.001).minimize(cross_entropy)
-
-        with tf.name_scope('accuracy'):
-            with tf.name_scope('correct_prediction'):
-                correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-            with tf.name_scope('accuracy'):
-                accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-            tf.summary.scalar('accuracy', accuracy)
-        merged = tf.summary.merge_all()
-
-        with tf.Session() as sess:
-            tf.global_variables_initializer().run()
-            summary_writer = tf.summary.FileWriter(SUMMARY_DIR, sess.graph)
-            for i in range(TRAIN_STEP):
-                xs, ys = mnist.train.next_batch(BATCH_SIZE)
-                summary, _ = sess.run([merged, train_step], feed_dict={x: xs, y_: ys})
-                summary_writer.add_summary(summary, i)
-        summary_writer.close()
-
-
-if __name__ == '__main__':
-    tf.app.run()
+#损失函数总量
+loss = tf.add_n(tf.get_collection('losses'))
