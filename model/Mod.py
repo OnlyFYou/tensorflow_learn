@@ -27,36 +27,36 @@ class Model(Basic):
         with tf.name_scope(layer_name):
             with tf.name_scope('weights'):
                 weights = self.get_weights([input_dim, output_dim], reguzation)
-                # self.variables_summary(layer_name + '/weights', weights)
+                self.variables_summary('/weights', weights)
 
             with tf.name_scope('biases'):
                 # 偏置项不加入正则化损失
                 biases = tf.Variable(tf.constant(0.1, shape=[output_dim]))
-                # self.variables_summary(layer_name + '/biases', biases)
+                self.variables_summary('/biases', biases)
 
             with tf.name_scope('layer_result'):
                 # 有滑动平均模型，计算滑动平均值
                 if avg_class is None:
                     if act is None:
                         no_activation = tf.matmul(input_tensor, weights) + biases
-                        # tf.summary.histogram('/no_activation', no_activation)
+                        tf.summary.histogram('/no_activation', no_activation)
                         return no_activation
                     else:
                         activation = act(tf.matmul(input_tensor, weights) + biases, name='activation')
-                        # tf.summary.histogram('/activation', activation)
+                        tf.summary.histogram('/activation', activation)
                         return activation
                 else:
                     if act is None:
                         no_activation = tf.matmul(input_tensor, avg_class.average(weights)) + avg_class.average(biases)
-                        # tf.summary.histogram(layer_name + '/avg/no_activation', no_activation)
+                        tf.summary.histogram('/avg/no_activation', no_activation)
                         return no_activation
                     else:
                         activation = act(tf.matmul(input_tensor, avg_class.average(weights)) + avg_class.average(biases), name='activation')
-                        # tf.summary.histogram(layer_name + '/avg/activation', activation)
+                        tf.summary.histogram('/avg/activation', activation)
                         return activation
 
-    def get_model_result(self, regulaztion, n_node, act):
-        x = tf.placeholder(tf.float32, [None, n_node[0]], name='layer_input')
+    def get_model_result(self, regulaztion, n_node, x, act):
+        #x = tf.placeholder(tf.float32, [None, n_node[0]], name='layer_input')
         n_layer = len(n_node)
         for i in range(n_layer):
             if i == 0:

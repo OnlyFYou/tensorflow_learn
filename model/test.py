@@ -2,8 +2,8 @@ from Util import Activations, Losses
 from Train import TrainModel
 
 data = {
-    "train_file_ary": ['D:\\tensorflow_learn\\model\\data\\train.csv'],
-    "test_file_ary": ['D:\\tensorflow_learn\\model\\data\\test.csv'],
+    "train_file_ary": ['C:\\Workspace\\tensorflow_learn\\model\\data\\train.csv'],
+    "test_file_ary": ['C:\\Workspace\\tensorflow_learn\\model\\data\\test.csv'],
     "total_steps": 5000,
     "model_path": "/model/to/model",
     "model_log": "/model/to/log",

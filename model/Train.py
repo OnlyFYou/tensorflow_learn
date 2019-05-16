@@ -3,6 +3,7 @@ from Data import DataUtil
 from Mod import Model
 import numpy as np
 
+
 class TrainModel:
     @staticmethod
     def train_start(data_info):
@@ -33,7 +34,7 @@ class TrainModel:
             reguzation = tf.contrib.layers.l2_regularizer(regu_rate)
         else:
             reguzation = None
-        y = model.get_model_result(reguzation, n_node_ary, act=act)
+        y = model.get_model_result(reguzation, n_node_ary, x, act=act)
         global_step = tf.Variable(0, trainable=False)
         with tf.name_scope('moving_average'):
             avg_class = tf.train.ExponentialMovingAverage(0.99, global_step)
@@ -64,18 +65,17 @@ class TrainModel:
             coord = tf.train.Coordinator()  # 创建一个协调器，管理线程
             threads = tf.train.start_queue_runners(coord=coord)
             for i in range(total_steps):
-                print('第%d次训练' % i)
                 e_batch, l_batch = sess.run([train_data, train_label])
                 e_exam = [[0. if i.decode() == 'nan' else float(i.decode()) for i in x] for x in np.asarray(e_batch)]
                 l_exam = [1 if x.decode('utf-8') == '1.0' else 0 for x in l_batch]
                 label = tf.one_hot(l_exam, 2).eval()
-                summary, loss_value, step, _ = sess.run([merge, total_loss, global_step, train_op],
+                loss_value, step, _, summary = sess.run([total_loss, global_step, train_op, merge],
                                                         feed_dict={x: e_exam, y_: label})
                 writer.add_summary(summary, i)
-                if i % 100 == 0:
+                if i % 500 == 0:
                     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                     run_metadata = tf.RunMetadata()
-                    summary, loss_value, step, _ = sess.run([merge, total_loss, global_step, train_op],
+                    loss_value, step, _, summary = sess.run([total_loss, global_step, train_op, merge],
                                                             feed_dict={x: e_exam, y_: label},
                                                             options=run_options, run_metadata=run_metadata)
                     writer.add_run_metadata(run_metadata, 'step%03d' % i)
